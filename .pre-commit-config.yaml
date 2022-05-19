@@ -49,7 +49,6 @@ repos:
       entry: pylint
       language: system
       types: [python]
-      exclude: ^tests/  # exclude tests folder
       args:
         [
           --rcfile=.pylintrc
