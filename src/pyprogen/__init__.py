@@ -1,1 +1,3 @@
-__version__ = '0.0.0'
+"""Init module of the pyprogen package"""
+
+__version__ = "0.0.0"
