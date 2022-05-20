@@ -9,6 +9,7 @@ from . import __version__
 
 WORKING_DIR = "work_dir"
 PACKAGE_NAME = "package_name"
+ENABLE_GIT = "enable_git"
 
 
 def parse_args(args):
@@ -29,10 +30,15 @@ def parse_args(args):
         "-n", "--name", type=str, required=True, dest=PACKAGE_NAME, help="The name of the python package"
     )
 
+    # git
+    parser.add_argument(
+        "--git", dest=ENABLE_GIT, action="store_true", help="Use this flag to enable version control using git"
+    )
+
     return parser.parse_args(args)
 
 
-def create_file_structure(path: str, package_name: str):
+def create_file_structure(path: str, package_name: str) -> str:
     """Creates the file structure of the project"""
     cwd = os.path.join(path, "src")  # current working directory
 
@@ -41,12 +47,15 @@ def create_file_structure(path: str, package_name: str):
 
     except FileExistsError:
         logging.error("Cannot create directory, a file already exists with the same name (%s)", package_name)
+        return ""
 
-    create_package(cwd, package_name)
+    package_dir = create_package(cwd, package_name)
+    return package_dir
 
 
-def create_package(path: str, package_name: str) -> bool:
+def create_package(path: str, package_name: str) -> str:
     """Creates a python package with the given name"""
+    logging.info("Creating package...")
     dir_path = os.path.join(path, package_name)
 
     try:
@@ -62,9 +71,17 @@ def create_package(path: str, package_name: str) -> bool:
 
     except FileExistsError:
         logging.error("Cannot create directory, a file already exists with the same name (%s)", package_name)
-        return False
+        return ""
 
-    return True
+    return dir_path
+
+
+def enable_git(path: str) -> bool:
+    """Enables git integration in the given path"""
+    logging.info("Initializing git...")
+    return_code = os.system(f"cd {path} && git init > nul")
+
+    return True if return_code == 0 else False
 
 
 def main():
@@ -84,7 +101,12 @@ def main():
 
     package_name = opts.get(PACKAGE_NAME)
 
-    create_file_structure(work_dir, package_name)
+    package_dir = create_file_structure(work_dir, package_name)
+
+    git_enabled = opts.get(ENABLE_GIT)
+
+    if git_enabled:
+        enable_git(package_dir)
 
     return 0
 
